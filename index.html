@@ -1,15 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CAP 2025 & Années Antérieures – SELS/A THIAROYE</title>
+<style>
+body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:18px}
+.container{max-width:1100px;margin:0 auto}
+.logo{width:90px;height:90px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 8px}
+.search{background:#fff;color:#333;padding:16px;border-radius:10px;margin-bottom:12px}
+.search input{width:100%;padding:10px;border-radius:6px;border:1px solid #ddd}
+.btn{margin-top:8px;padding:8px 12px;border-radius:6px;background:#667eea;color:#fff;border:none;cursor:pointer}
+.result{background:#fff;color:#111;padding:14px;border-radius:8px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px}
+.label{font-weight:700;color:#555}
+.val{color:#111}
+.status-VALIDE{color:green;font-weight:700}
+.status-REJETE{color:red;font-weight:700}
+.status-RETIRE{color:orange;font-weight:700}
+@media(max-width:700px){.row{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
-
-
-   <center><h1>Bienvenu dans monsite</h1></center>
-
+<div class="container">
+  <div class="logo"><img src="logo SELS A.png" alt="logo" style="width:80%"></div>
+  <h2 style="text-align:center">CAP 2025 & Années Antérieures – SELS/A THIAROYE</h2>
+  <p style="text-align:center;background:rgba(255,255,255,0.12);display:inline-block;padding:8px;border-radius:8px">
+  SELS/A THIAROYE vous souhaite Heureuse Année Scolaire</p>
+  <div class="search">
+    <input id="q" placeholder="Entrez le matricule (ex: 517426/C)">
+    <button id="go" class="btn">Rechercher</button>
+    <p id="info">Chargement…</p>
+  </div>
+  <div id="out"></div>
+</div>
+<script>
+let agents=null;
+async function load(){
+ try{
+  const r=await fetch('agents_merged.json');
+  agents=await r.json();
+  document.getElementById('info').textContent=agents.length+' enregistrements chargés';
+  document.getElementById('go').disabled=false;
+ }catch(e){
+  document.getElementById('info').textContent='Erreur: '+e.message;
+ }
+}
+function norm(m){return (m||'').toString().replace(/\s+/g,'').replace(/[^A-Z0-9\/]/gi,'').toUpperCase()}
+function find(q){const n=norm(q);if(!agents)return null;return agents.find(a=>norm(a.matricule)===n||norm(a.numero)===n)}
+function render(a){
+ if(!a)return '<div class="result">Aucun agent trouvé</div>';
+ let sclass='status-'+(a.statut||'VALIDE');
+ let html='<div class="result"><div style="margin-bottom:8px"><strong>'+ (a.prenoms||'')+' '+(a.nom||'') +'</strong> &nbsp; <span class="'+sclass+'">'+(a.statut||'VALIDE')+'</span></div>';
+ for(const k in a){
+  if(k==='source_file')continue;
+  html+='<div class="row"><div class="label">'+k.replace(/_/g,' ')+'</div><div class="val">'+(a[k]||'')+'</div></div>';
+ }
+ html+='</div>';
+ return html;
+}
+document.getElementById('go').addEventListener('click',()=>{
+ const q=document.getElementById('q').value.trim();
+ if(!q){document.getElementById('out').innerHTML='<div class="result">Entrez un matricule</div>';return}
+ document.getElementById('out').innerHTML=render(find(q));
+});
+document.getElementById('q').addEventListener('keypress',e=>{
+ if(e.key==='Enter')document.getElementById('go').click();
+});
+load();
+</script>
 </body>
 </html>
